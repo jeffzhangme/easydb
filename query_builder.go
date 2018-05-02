@@ -1,42 +1,38 @@
-package mysql
+package easydb
 
 import (
 	"bytes"
 	"strconv"
 	"strings"
 	"unsafe"
-
-	"github.com/jeffzhangme/easydb"
-	"github.com/jeffzhangme/easydb/restrict"
 )
 
-// QueryValue query value
-type QueryValue struct {
+// queryValue query value
+type queryValue struct {
 	sqlBuilder
 	values map[string][]string
 	dbName string
 }
 
-// NewQueryValue init query value
-func NewQueryValue(opts ...easydb.DBOptType) QueryValue {
-	opt := easydb.Select
+// newQueryValue init query value
+func newQueryValue(opts ...dbOptType) queryValue {
+	opt := Select
 	if len(opts) > 0 {
 		opt = opts[0]
 	}
-	p := QueryValue{sqlBuilder: build(opt)}
+	p := queryValue{sqlBuilder: build(opt)}
 	p.values = map[string][]string{}
 	return p
 }
 
-// QueryBuilder build query
-type QueryBuilder struct {
-	QueryValue
+// queryBuilder build query
+type queryBuilder struct {
+	queryValue
 }
 
 // BuildQuery begin
-func BuildQuery(dbName ...string) restrict.IBuildQueryReturn {
-	p := &QueryBuilder{}
-	p.sqlBuilder = build(easydb.Select)
+func BuildQuery(dbName ...string) iBuildQueryReturn {
+	p := &queryBuilder{queryValue: newQueryValue()}
 	if len(dbName) > 0 && len(dbName[0]) > 0 {
 		p.dbName = dbName[0] + "."
 	}
@@ -44,7 +40,7 @@ func BuildQuery(dbName ...string) restrict.IBuildQueryReturn {
 }
 
 // QueryFuncs set query func
-func (p *QueryBuilder) QueryFuncs(funccs ...easydb.QueryFunc) restrict.IQFuncReturn {
+func (p *queryBuilder) QueryFuncs(funccs ...QueryFunc) iQFuncReturn {
 	for _, funcc := range funccs {
 		as := ""
 		if "" != funcc.As {
@@ -57,7 +53,7 @@ func (p *QueryBuilder) QueryFuncs(funccs ...easydb.QueryFunc) restrict.IQFuncRet
 }
 
 // Columns set columns
-func (p *QueryBuilder) Columns(columns ...easydb.Column) restrict.IColumnsReturn {
+func (p *queryBuilder) Columns(columns ...Column) iColumnsReturn {
 	for _, column := range columns {
 		as := ""
 		if "" != column.As {
@@ -69,7 +65,7 @@ func (p *QueryBuilder) Columns(columns ...easydb.Column) restrict.IColumnsReturn
 }
 
 // Tables set table
-func (p *QueryBuilder) Tables(tables ...easydb.Table) restrict.IFromsReturn {
+func (p *queryBuilder) Tables(tables ...Table) iFromsReturn {
 	for _, table := range tables {
 		as := " "
 		if "" != table.As {
@@ -84,7 +80,7 @@ func (p *QueryBuilder) Tables(tables ...easydb.Table) restrict.IFromsReturn {
 }
 
 // LeftJoin left join
-func (p *QueryBuilder) LeftJoin(table easydb.Table) restrict.IJoinReturn {
+func (p *queryBuilder) LeftJoin(table Table) iJoinReturn {
 	as := " "
 	if "" != table.As {
 		as += table.As
@@ -92,12 +88,12 @@ func (p *QueryBuilder) LeftJoin(table easydb.Table) restrict.IJoinReturn {
 	if !strings.Contains(table.Name, ".") {
 		table.Name = p.dbName + table.Name
 	}
-	p.sqlBuilder.join(string(easydb.LeftJoin) + table.Name + as)
+	p.sqlBuilder.join(string(LeftJoin) + table.Name + as)
 	return p
 }
 
 // RightJoin right join
-func (p *QueryBuilder) RightJoin(table easydb.Table) restrict.IJoinReturn {
+func (p *queryBuilder) RightJoin(table Table) iJoinReturn {
 	as := " "
 	if "" != table.As {
 		as += table.As
@@ -105,90 +101,90 @@ func (p *QueryBuilder) RightJoin(table easydb.Table) restrict.IJoinReturn {
 	if !strings.Contains(table.Name, ".") {
 		table.Name = p.dbName + table.Name
 	}
-	p.sqlBuilder.join(string(easydb.RightJoin) + table.Name + as)
+	p.sqlBuilder.join(string(RightJoin) + table.Name + as)
 	return p
 }
 
 // On on
-func (p *QueryBuilder) On(on easydb.On) restrict.IOnReturn {
-	where := (*easydb.Where)(unsafe.Pointer(&on))
+func (p *queryBuilder) On(on On) iOnReturn {
+	where := (*Where)(unsafe.Pointer(&on))
 	p.sqlBuilder.on(likeWhere(p, "join", where))
 	return p
 }
 
 // Where set where
-func (p *QueryBuilder) Where(where easydb.Where) restrict.IWheresReturn {
+func (p *queryBuilder) Where(where Where) iWheresReturn {
 	p.sqlBuilder.wheres(likeWhere(p, "where", &where))
 	return p
 }
 
 // StartGroup start new group
-func (p *QueryBuilder) StartGroup() restrict.IStartGroupReturn {
+func (p *queryBuilder) StartGroup() iStartGroupReturn {
 	sql, _ := p.Gen()
 	if strings.Contains(sql, "HAVING") {
-		p.sqlBuilder.havings(string(easydb.GroupStart))
+		p.sqlBuilder.havings(string(GroupStart))
 	} else if strings.Contains(sql, "WHERE") {
-		p.sqlBuilder.wheres(string(easydb.GroupStart))
+		p.sqlBuilder.wheres(string(GroupStart))
 	} else {
-		p.sqlBuilder.join(string(easydb.GroupStart))
+		p.sqlBuilder.join(string(GroupStart))
 	}
 	return p
 }
 
 // EndGroup end group
-func (p *QueryBuilder) EndGroup() restrict.IEndGroupReturn {
+func (p *queryBuilder) EndGroup() iEndGroupReturn {
 	sql, _ := p.Gen()
 	if strings.Contains(sql, "HAVING") {
-		p.sqlBuilder.havings(string(easydb.GroupEnd))
+		p.sqlBuilder.havings(string(GroupEnd))
 	} else if strings.Contains(sql, "WHERE") {
-		p.sqlBuilder.wheres(string(easydb.GroupEnd))
+		p.sqlBuilder.wheres(string(GroupEnd))
 	} else {
-		p.sqlBuilder.join(string(easydb.GroupEnd))
+		p.sqlBuilder.join(string(GroupEnd))
 	}
 	return p
 }
 
 // And and
-func (p *QueryBuilder) And() restrict.IAndReturn {
+func (p *queryBuilder) And() iAndReturn {
 	sql, _ := p.Gen()
 	if strings.Contains(sql, "HAVING") {
-		p.sqlBuilder.havings(string(easydb.AND))
+		p.sqlBuilder.havings(string(AND))
 	} else if strings.Contains(sql, "WHERE") {
-		p.sqlBuilder.wheres(string(easydb.AND))
+		p.sqlBuilder.wheres(string(AND))
 	} else {
-		p.sqlBuilder.join(string(easydb.AND))
+		p.sqlBuilder.join(string(AND))
 	}
 	return p
 }
 
 // Or or
-func (p *QueryBuilder) Or() restrict.IOrReturn {
+func (p *queryBuilder) Or() iOrReturn {
 	sql, _ := p.Gen()
 	if strings.Contains(sql, "HAVING") {
-		p.sqlBuilder.havings(string(easydb.OR))
+		p.sqlBuilder.havings(string(OR))
 	} else if strings.Contains(sql, "WHERE") {
-		p.sqlBuilder.wheres(string(easydb.OR))
+		p.sqlBuilder.wheres(string(OR))
 	} else {
-		p.sqlBuilder.join(string(easydb.OR))
+		p.sqlBuilder.join(string(OR))
 	}
 	return p
 }
 
 // GroupBy group by
-func (p *QueryBuilder) GroupBy(group ...string) restrict.IGroupByReturn {
+func (p *queryBuilder) GroupBy(group ...string) iGroupByReturn {
 	p.sqlBuilder.group(" ( " + strings.Join(group, ", ") + " ) ")
 	return p
 }
 
 // Having set having
-func (p *QueryBuilder) Having(having easydb.Having) restrict.IHavingsReturn {
-	where := (*easydb.Where)(unsafe.Pointer(&having))
+func (p *queryBuilder) Having(having Having) iHavingsReturn {
+	where := (*Where)(unsafe.Pointer(&having))
 	p.sqlBuilder.havings(likeWhere(p, "having", where))
 	return p
 }
 
 // OrderBy order by
-func (p *QueryBuilder) OrderBy(orders ...easydb.Order) restrict.IOrderByReturn {
+func (p *queryBuilder) OrderBy(orders ...Order) iOrderByReturn {
 	orderStr := bytes.NewBufferString("")
 	for _, order := range orders {
 		orderStr.WriteString(order.Key + " " + string(order.Type) + ", ")
@@ -199,7 +195,7 @@ func (p *QueryBuilder) OrderBy(orders ...easydb.Order) restrict.IOrderByReturn {
 }
 
 // Limit set limit
-func (p *QueryBuilder) Limit(limit int) restrict.ILimitReturn {
+func (p *queryBuilder) Limit(limit int) iLimitReturn {
 	limitStr := strconv.Itoa(limit)
 	p.values["limit"] = append(p.values["limit"], limitStr)
 	p.sqlBuilder.limit(" ? ")
@@ -207,7 +203,7 @@ func (p *QueryBuilder) Limit(limit int) restrict.ILimitReturn {
 }
 
 // Offset set offset
-func (p *QueryBuilder) Offset(offset int) restrict.IOffsetReturn {
+func (p *queryBuilder) Offset(offset int) iOffsetReturn {
 	offsetStr := strconv.Itoa(offset)
 	p.values["offset"] = append(p.values["offset"], offsetStr)
 	p.sqlBuilder.offset(" ? ")
@@ -215,12 +211,12 @@ func (p *QueryBuilder) Offset(offset int) restrict.IOffsetReturn {
 }
 
 // Gen get sql
-func (p *QueryBuilder) Gen() (sql string, err error) {
+func (p *queryBuilder) Gen() (sql string, err error) {
 	return p.sqlBuilder.gen()
 }
 
 // Val get values
-func (p *QueryBuilder) Val() []string {
+func (p *queryBuilder) Val() []string {
 	values := []string{}
 	values = append(values, p.values["join"]...)
 	values = append(values, p.values["value"]...)
@@ -230,10 +226,10 @@ func (p *QueryBuilder) Val() []string {
 	values = append(values, p.values["offset"]...)
 	return values
 }
-func likeWhere(p *QueryBuilder, t string, where *easydb.Where) string {
+func likeWhere(p *queryBuilder, t string, where *Where) string {
 	whereStr := bytes.NewBufferString(where.Key)
 	switch where.Opt {
-	case easydb.IN:
+	case IN:
 		placeholder := []string{}
 		for _, v := range where.Ins {
 			if strings.Contains(v, "`") {
@@ -251,11 +247,11 @@ func likeWhere(p *QueryBuilder, t string, where *easydb.Where) string {
 		whereStr.WriteString(strings.Join(placeholder, ", "))
 		whereStr.WriteString(" ) ")
 		break
-	case easydb.IsNULL:
-		whereStr.WriteString(string(easydb.IsNULL))
+	case IsNULL:
+		whereStr.WriteString(string(IsNULL))
 		break
-	case easydb.NotNULL:
-		whereStr.WriteString(string(easydb.NotNULL))
+	case NotNULL:
+		whereStr.WriteString(string(NotNULL))
 		break
 	default:
 		whereStr.WriteString(string(where.Opt))

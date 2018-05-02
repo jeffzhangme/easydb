@@ -4,84 +4,84 @@ var no_value = "no value"
 var db_mysql = "db_mysql"
 var db_pgsql = "db_pgsql"
 
-// DBType DBType
-type DBType int
+// dbType dbType
+type dbType int
 
 const (
 	// MYSQL mysql
-	MYSQL DBType = iota
+	MYSQL dbType = iota
 	// PGSQL postgresql
 	PGSQL
 )
 
-// DBOptType DBOptType
-type DBOptType string
+// dbOptType dbOptType
+type dbOptType string
 
 const (
 	// Insert Insert
-	Insert DBOptType = "INSERT INTO "
+	Insert dbOptType = "INSERT INTO "
 	// Delete Delete
-	Delete DBOptType = "DELETE FROM "
+	Delete dbOptType = "DELETE FROM "
 	// Update Update
-	Update DBOptType = "UPDATE "
+	Update dbOptType = "UPDATE "
 	// Select Select
-	Select DBOptType = "SELECT "
+	Select dbOptType = "SELECT "
 )
 
-// QueryType QueryType
-type QueryType string
+// queryType queryType
+type queryType string
 
 const (
 	// COUNT select count
-	COUNT QueryType = " COUNT"
+	COUNT queryType = " COUNT"
 	// SUM select sum
-	SUM QueryType = " SUM"
+	SUM queryType = " SUM"
 	// MAX select max
-	MAX QueryType = " MAX"
+	MAX queryType = " MAX"
 	// MIN select min
-	MIN QueryType = " MIN"
+	MIN queryType = " MIN"
 	// AVG select avg
-	AVG QueryType = " AVG"
+	AVG queryType = " AVG"
 )
 
-// LogicalOptType LogicalOptType
-type LogicalOptType string
+// logicalOptType logicalOptType
+type logicalOptType string
 
 const (
 	// EQ =
-	EQ LogicalOptType = " = "
+	EQ logicalOptType = " = "
 	// GT >
-	GT LogicalOptType = " > "
+	GT logicalOptType = " > "
 	// LT <
-	LT LogicalOptType = " < "
+	LT logicalOptType = " < "
 	// GE >=
-	GE LogicalOptType = " >= "
+	GE logicalOptType = " >= "
 	// LE <=
-	LE LogicalOptType = " <= "
+	LE logicalOptType = " <= "
 	// NE <>
-	NE LogicalOptType = " <> "
+	NE logicalOptType = " <> "
 	// LIKE like
-	LIKE LogicalOptType = " LIKE "
+	LIKE logicalOptType = " LIKE "
 	// IN in
-	IN LogicalOptType = " IN "
+	IN logicalOptType = " IN "
 	// IsNULL is null
-	IsNULL LogicalOptType = " IS NULL "
+	IsNULL logicalOptType = " IS NULL "
 	// NotNULL is not null
-	NotNULL LogicalOptType = " IS NOT NULL "
+	NotNULL logicalOptType = " IS NOT NULL "
 )
 
-// WhereGroupType WhereGroupType
-type WhereGroupType string
+// whereGroupType whereGroupType
+type whereGroupType string
 
 const (
 	// AND AND
-	AND WhereGroupType = " AND "
+	AND whereGroupType = " AND "
 	// OR OR
-	OR WhereGroupType = " OR "
+	OR whereGroupType = " OR "
 	// GroupStart (
-	GroupStart WhereGroupType = " ( "
+	GroupStart whereGroupType = " ( "
 	// GroupEnd )
-	GroupEnd WhereGroupType = " ) "
+	GroupEnd whereGroupType = " ) "
 )
 
 // JoinType JoinType
@@ -94,12 +94,12 @@ const (
 	RightJoin JoinType = " RIGHT JOIN "
 )
 
-// OrderType OrderType
-type OrderType string
+// orderType orderType
+type orderType string
 
 const (
 	// DESC DESC
-	DESC OrderType = " DESC "
+	DESC orderType = " DESC "
 	// ASC ASC
-	ASC OrderType = " ASC "
+	ASC orderType = " ASC "
 )

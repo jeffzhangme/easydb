@@ -3,6 +3,7 @@ package easydb
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"sync"
 
 	// pgsql
@@ -23,7 +24,7 @@ const (
 )
 
 type dbPgsql struct {
-	dbMysql
+	easydb
 }
 
 func initPgsql() *dbPgsql {
@@ -42,6 +43,7 @@ func initPgsql() *dbPgsql {
 
 func pgsqlConfig() {
 	pgsqlInst = &dbPgsql{}
+	pgsqlInst.dbType = PGSQL
 	conf := goini.SetConfig(getCurrentPath() + "db_config.ini")
 	pgsqlInst.user = conf.GetValue(db_pgsql, "username")
 	pgsqlInst.host = conf.GetValue(db_pgsql, "host")
@@ -65,4 +67,7 @@ func pgsqlConfig() {
 	}
 	linkStr := "postgres://%s:%s@%s:%s/%s?sslmode=require"
 	pgsqlInst.DB, _ = sql.Open("postgres", fmt.Sprintf(linkStr, pgsqlInst.user, pgsqlInst.pwd, pgsqlInst.host, pgsqlInst.port, pgsqlInst.defaultDbName))
+	if nil != pgsqlInst.Ping() {
+		log.Fatal(pgsqlInst.Ping())
+	}
 }

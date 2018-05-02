@@ -16,7 +16,6 @@ Add the configuration in the file glide.yaml:
 
 ```
 - package: github.com/jeffzhangme/easydb
-  version: master
 ```
 
 Install the package with the command from shell:
@@ -25,23 +24,27 @@ Install the package with the command from shell:
 $ glide install
 ```
 
-Add your configuration to `db_config.ini` and refer to the unit test method in the `easydb_test.go` file in the test directory for use.
+Add your configuration to `db_config.ini` and refer to the unit test method in the `easydb_test.go` file for use.
 
 Your code looks like this:
 
 ```
+package main
+
 import (
-  "github.com/jeffzhangme/easydb"
-  "github.com/jeffzhangme/easydb/mysql"
+	"fmt"
+
+	"github.com/jeffzhangme/easydb"
 )
 
 func main() {
 	defer easydb.Close()
 	db := easydb.GetInst(easydb.MYSQL)
 	result, _ := db.Select(
-		mysql.BuildQuery("testdb").
+		easydb.BuildQuery("testdb").
 			Columns(easydb.Column{Name: "*"}).
-			Tables(easydb.Table{Name: "test_table"}))
+			Tables(easydb.Table{Name: "test_table"}).
+			Where(easydb.Where{Key: "name", Opt: easydb.EQ, Value: "name"}))
 	fmt.Println(result)
 }
 ```

@@ -1,8 +1,7 @@
-package mysql
+package easydb
 
 import (
 	"bytes"
-	"github.com/jeffzhangme/easydb"
 	"strings"
 )
 
@@ -15,17 +14,17 @@ func newSQLBuilder() *sqlBuilder {
 	return sqlBuilder
 }
 
-func build(optType easydb.DBOptType) sqlBuilder {
+func build(optType dbOptType) sqlBuilder {
 	sqlBuilder := sqlBuilder{sql: newSQL()}
 	sqlBuilder.operate(optType)
 	return sqlBuilder
 }
 
-func (p *sqlBuilder) queryType(queryType easydb.QueryType) {
+func (p *sqlBuilder) queryType(queryType queryType) {
 	p.sql.queryType = queryType
 }
 
-func (p *sqlBuilder) operate(operate easydb.DBOptType) {
+func (p *sqlBuilder) operate(operate dbOptType) {
 	p.sql.operate = operate
 }
 
@@ -115,36 +114,36 @@ func (p *sqlBuilder) gen() (sql string, err error) {
 		columns = string(p.sql.queryType) + "( " + columns + " )"
 	}
 	switch p.sql.operate {
-	case easydb.Insert:
+	case Insert:
 		columns = " (" + columns + ") "
 		values := []string{}
 		for range strings.Split(columns, ",") {
 			values = append(values, "?")
 		}
 		valueStr := " (" + strings.Join(values, ",") + ") "
-		sqlBuffers.WriteString(string(easydb.Insert))
+		sqlBuffers.WriteString(string(Insert))
 		sqlBuffers.WriteString(tables)
 		sqlBuffers.WriteString(columns)
 		sqlBuffers.WriteString(" VALUES ")
 		sqlBuffers.WriteString(valueStr)
 		break
-	case easydb.Delete:
-		sqlBuffers.WriteString(string(easydb.Delete))
+	case Delete:
+		sqlBuffers.WriteString(string(Delete))
 		sqlBuffers.WriteString(tables)
 		sqlBuffers.WriteString(joins)
 		sqlBuffers.WriteString(wheres)
 		break
-	case easydb.Update:
-		sqlBuffers.WriteString(string(easydb.Update))
+	case Update:
+		sqlBuffers.WriteString(string(Update))
 		sqlBuffers.WriteString(tables)
 		sqlBuffers.WriteString(joins)
 		sqlBuffers.WriteString(" SET ")
 		sqlBuffers.WriteString(columns)
 		sqlBuffers.WriteString(wheres)
 		break
-	case easydb.Select:
+	case Select:
 		havings := p.sql.havings.String()
-		sqlBuffers.WriteString(string(easydb.Select))
+		sqlBuffers.WriteString(string(Select))
 		sqlBuffers.WriteString(columns)
 		sqlBuffers.WriteString(" FROM ")
 		sqlBuffers.WriteString(tables)

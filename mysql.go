@@ -3,8 +3,7 @@ package easydb
 import (
 	"database/sql"
 	"fmt"
-	"os"
-	"path/filepath"
+	"log"
 	"sync"
 
 	// mysql
@@ -25,8 +24,7 @@ const (
 )
 
 type dbMysql struct {
-	*sql.DB
-	host, user, pwd, port, defaultDbName string
+	easydb
 }
 
 func initMysql() *dbMysql {
@@ -45,6 +43,7 @@ func initMysql() *dbMysql {
 
 func mysqlConfig() {
 	mysqlInst = &dbMysql{}
+	mysqlInst.dbType = MYSQL
 	conf := goini.SetConfig(getCurrentPath() + "db_config.ini")
 	mysqlInst.user = conf.GetValue(db_mysql, "username")
 	mysqlInst.host = conf.GetValue(db_mysql, "host")
@@ -68,55 +67,7 @@ func mysqlConfig() {
 	}
 	linkStr := "%s:%s@tcp(%s:%s)/%s"
 	mysqlInst.DB, _ = sql.Open("mysql", fmt.Sprintf(linkStr, mysqlInst.user, mysqlInst.pwd, mysqlInst.host, mysqlInst.port, mysqlInst.defaultDbName))
-}
-
-// Do Do
-func (p *dbMysql) Do(optType DBOptType, sqlBuilder iSQLBuilder) (result []map[string]interface{}, err error) {
-	sql, _ := sqlBuilder.Gen()
-	stmt, err := p.Prepare(sql)
-	switch optType {
-	case Select:
-		rows, queryErr := stmt.Query(convertToInterfaceSlice(sqlBuilder.Val())...)
-		err = queryErr
-		columns, _ := rows.Columns()
-		dest := make([]interface{}, len(columns))
-		destPointers := make([]interface{}, len(columns))
-		for i, _ := range columns {
-			destPointers[i] = &dest[i]
-		}
-		resultArr := []map[string]interface{}{}
-		for rows.Next() {
-			err = rows.Scan(destPointers...)
-			resultMap := map[string]interface{}{}
-			for i, val := range dest {
-				resultMap[columns[i]] = val
-				if v, ok := (val).([]byte); ok {
-					resultMap[columns[i]] = string(v)
-				}
-			}
-			resultArr = append(resultArr, resultMap)
-		}
-		result = resultArr
-		break
-	default:
-		_, execErr := stmt.Exec(convertToInterfaceSlice(sqlBuilder.Val())...)
-		err = execErr
-		break
+	if nil != mysqlInst.Ping() {
+		log.Fatal(mysqlInst.Ping())
 	}
-	return
-}
-
-// convertToInterfaceSlice []string to []interface{}
-func convertToInterfaceSlice(strSlice []string) []interface{} {
-	interSlice := make([]interface{}, len(strSlice))
-	for index, value := range strSlice {
-		interSlice[index] = value
-	}
-	return interSlice
-}
-
-func getCurrentPath() string {
-	currentPath, _ := filepath.Abs(filepath.Dir(os.Args[0]))
-	currentPath += "/"
-	return currentPath
 }

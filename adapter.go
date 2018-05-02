@@ -13,7 +13,7 @@ type iAdapter interface {
 }
 
 type iDBOperate interface {
-	Do(optType DBOptType, sqlBuilder iSQLBuilder) ([]map[string]interface{}, error)
+	Do(optType dbOptType, sqlBuilder iSQLBuilder) ([]map[string]interface{}, error)
 }
 
 // dbAdapter adapter

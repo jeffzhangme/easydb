@@ -2,7 +2,7 @@ package easydb
 
 // Where where
 type Where struct {
-	Opt   LogicalOptType
+	Opt   logicalOptType
 	Key   string
 	Value string
 	Ins   []string
@@ -10,7 +10,7 @@ type Where struct {
 
 // On on
 type On struct {
-	Opt   LogicalOptType
+	Opt   logicalOptType
 	Key   string
 	Value string
 	Ins   []string
@@ -18,7 +18,7 @@ type On struct {
 
 // Having having
 type Having struct {
-	Opt   LogicalOptType
+	Opt   logicalOptType
 	Key   string
 	Value string
 	Ins   []string
@@ -26,7 +26,7 @@ type Having struct {
 
 // Order order
 type Order struct {
-	Type OrderType
+	Type orderType
 	Key  string
 }
 
@@ -45,7 +45,7 @@ type Column struct {
 
 // QueryFunc query func
 type QueryFunc struct {
-	Type  QueryType
+	Type  queryType
 	Names []string
 	As    string
 }

@@ -1,15 +1,14 @@
-package mysql
+package easydb
 
 import (
 	"bytes"
-	"github.com/jeffzhangme/easydb"
 )
 
 type sql_ struct {
 	// opt
-	operate easydb.DBOptType
+	operate dbOptType
 	// query type
-	queryType easydb.QueryType
+	queryType queryType
 	// table
 	tables *bytes.Buffer
 	// join
