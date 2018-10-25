@@ -5,9 +5,12 @@ import (
 	"testing"
 )
 
+var mysqlConf = NewMysqlConfig(WithPassword("password"), WithSchema("testdb"))
+var mysqlConf2 = NewMysqlConfig(WithPassword("password"), WithSchema("testdb"), WithHost("127.0.0.1"))
+var pgsqlConf = NewPgsqlConfig(WithSchema("testdb"))
+
 func Test_mysql_insert(t *testing.T) {
-	defer Close()
-	db := GetInst(MYSQL)
+	db := GetInst(MYSQL, mysqlConf2)
 	err := db.Insert(
 		BuildInsert("testdb").
 			Table(Table{Name: "test_table"}).
@@ -15,8 +18,7 @@ func Test_mysql_insert(t *testing.T) {
 	fmt.Println(err)
 }
 func Test_mysql_delete(t *testing.T) {
-	defer Close()
-	db := GetInst(MYSQL)
+	db := GetInst(MYSQL, mysqlConf)
 	err := db.Delete(
 		BuildDelete("testdb").
 			Table(Table{Name: "test_table"}).
@@ -24,8 +26,7 @@ func Test_mysql_delete(t *testing.T) {
 	fmt.Println(err)
 }
 func Test_mysql_update(t *testing.T) {
-	defer Close()
-	db := GetInst(MYSQL)
+	db := GetInst(MYSQL, mysqlConf)
 	err := db.Update(
 		BuildUpdate("testdb").
 			Table(Table{Name: "test_table"}).
@@ -34,8 +35,7 @@ func Test_mysql_update(t *testing.T) {
 	fmt.Println(err)
 }
 func Test_mysql_select(t *testing.T) {
-	defer Close()
-	db := GetInst(MYSQL)
+	db := GetInst(MYSQL, mysqlConf2)
 	result, _ := db.Select(
 		BuildQuery("testdb").
 			Columns(Column{Name: "*"}).
@@ -45,8 +45,7 @@ func Test_mysql_select(t *testing.T) {
 }
 
 func Test_pgsql_insert(t *testing.T) {
-	defer Close()
-	db := GetInst(PGSQL)
+	db := GetInst(PGSQL, pgsqlConf)
 	err := db.Insert(
 		BuildInsert("public").
 			Table(Table{Name: "test_table"}).
@@ -54,8 +53,7 @@ func Test_pgsql_insert(t *testing.T) {
 	fmt.Println(err)
 }
 func Test_pgsql_delete(t *testing.T) {
-	defer Close()
-	db := GetInst(PGSQL)
+	db := GetInst(PGSQL, pgsqlConf)
 	err := db.Delete(
 		BuildDelete("public").
 			Table(Table{Name: "test_table"}).
@@ -63,8 +61,7 @@ func Test_pgsql_delete(t *testing.T) {
 	fmt.Println(err)
 }
 func Test_pgsql_update(t *testing.T) {
-	defer Close()
-	db := GetInst(PGSQL)
+	db := GetInst(PGSQL, pgsqlConf)
 	err := db.Update(
 		BuildUpdate("public").
 			Table(Table{Name: "test_table"}).
@@ -74,8 +71,7 @@ func Test_pgsql_update(t *testing.T) {
 }
 
 func Test_pgsql_select(t *testing.T) {
-	defer Close()
-	db := GetInst(PGSQL)
+	db := GetInst(PGSQL, pgsqlConf)
 	result, _ := db.Select(
 		BuildQuery("public").
 			Columns(Column{Name: "*"}).

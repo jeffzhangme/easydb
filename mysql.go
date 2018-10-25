@@ -8,66 +8,38 @@ import (
 
 	// mysql
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/widuu/goini"
 )
 
 var (
-	mysqlInst *dbMysql
-)
-
-const (
-	defaultHost   = "localhost"
-	defaultUser   = "root"
-	defaultPwd    = "123456"
-	defaultPort   = "3306"
-	defaultDbName = "testdb"
+	mysqlInsts = map[string]*dbMysql{}
 )
 
 type dbMysql struct {
 	easydb
 }
 
-func initMysql() *dbMysql {
+func initMysql(config *dbConfig) *dbMysql {
 	mu := sync.Mutex{}
 	mu.Lock()
-	if mysqlInst == nil {
-		mysqlConfig()
+	if mysqlInsts[config.DataSource] == nil {
+		mysqlConfig(config)
 	} else {
-		if mysqlInst.Ping() != nil {
-			mysqlConfig()
+		if mysqlInsts[config.DataSource].Ping() != nil {
+			mysqlConfig(config)
 		}
 	}
 	mu.Unlock()
-	return mysqlInst
+	return mysqlInsts[config.DataSource]
 }
 
-func mysqlConfig() {
-	mysqlInst = &dbMysql{}
+func mysqlConfig(config *dbConfig) {
+	mysqlInst := &dbMysql{}
 	mysqlInst.dbType = MYSQL
-	conf := goini.SetConfig(getCurrentPath() + "db_config.ini")
-	mysqlInst.user = conf.GetValue(db_mysql, "username")
-	mysqlInst.host = conf.GetValue(db_mysql, "host")
-	mysqlInst.port = conf.GetValue(db_mysql, "port")
-	mysqlInst.pwd = conf.GetValue(db_mysql, "password")
-	mysqlInst.defaultDbName = conf.GetValue(db_mysql, "database")
-	if mysqlInst.user == no_value {
-		mysqlInst.user = defaultUser
-	}
-	if mysqlInst.host == no_value {
-		mysqlInst.host = defaultHost
-	}
-	if mysqlInst.port == no_value {
-		mysqlInst.port = defaultPort
-	}
-	if mysqlInst.pwd == no_value {
-		mysqlInst.pwd = defaultPwd
-	}
-	if mysqlInst.defaultDbName == no_value {
-		mysqlInst.defaultDbName = defaultDbName
-	}
+	mysqlInst.dbConfig = config
 	linkStr := "%s:%s@tcp(%s:%s)/%s"
-	mysqlInst.DB, _ = sql.Open("mysql", fmt.Sprintf(linkStr, mysqlInst.user, mysqlInst.pwd, mysqlInst.host, mysqlInst.port, mysqlInst.defaultDbName))
+	mysqlInst.DB, _ = sql.Open("mysql", fmt.Sprintf(linkStr, mysqlInst.UserName, mysqlInst.Password, mysqlInst.Host, mysqlInst.Port, mysqlInst.Schema))
 	if nil != mysqlInst.Ping() {
 		log.Fatal(mysqlInst.Ping())
 	}
+	mysqlInsts[config.DataSource] = mysqlInst
 }

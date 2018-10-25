@@ -8,66 +8,38 @@ import (
 
 	// pgsql
 	_ "github.com/lib/pq"
-	"github.com/widuu/goini"
 )
 
 var (
-	pgsqlInst *dbPgsql
-)
-
-const (
-	defaultPgHost   = "localhost"
-	defaultPgUser   = "postgres"
-	defaultPgPwd    = "postgres"
-	defaultPgPort   = "5432"
-	defaultPgDbName = "testdb"
+	pgsqlInsts = map[string]*dbPgsql{}
 )
 
 type dbPgsql struct {
 	easydb
 }
 
-func initPgsql() *dbPgsql {
+func initPgsql(config *dbConfig) *dbPgsql {
 	mu := sync.Mutex{}
 	mu.Lock()
-	if pgsqlInst == nil {
-		pgsqlConfig()
+	if pgsqlInsts[config.DataSource] == nil {
+		pgsqlConfig(config)
 	} else {
-		if pgsqlInst.Ping() != nil {
-			pgsqlConfig()
+		if pgsqlInsts[config.DataSource].Ping() != nil {
+			pgsqlConfig(config)
 		}
 	}
 	mu.Unlock()
-	return pgsqlInst
+	return pgsqlInsts[config.DataSource]
 }
 
-func pgsqlConfig() {
-	pgsqlInst = &dbPgsql{}
+func pgsqlConfig(config *dbConfig) {
+	pgsqlInst := &dbPgsql{}
 	pgsqlInst.dbType = PGSQL
-	conf := goini.SetConfig(getCurrentPath() + "db_config.ini")
-	pgsqlInst.user = conf.GetValue(db_pgsql, "username")
-	pgsqlInst.host = conf.GetValue(db_pgsql, "host")
-	pgsqlInst.port = conf.GetValue(db_pgsql, "port")
-	pgsqlInst.pwd = conf.GetValue(db_pgsql, "password")
-	pgsqlInst.defaultDbName = conf.GetValue(db_pgsql, "database")
-	if pgsqlInst.user == no_value {
-		pgsqlInst.user = defaultPgUser
-	}
-	if pgsqlInst.host == no_value {
-		pgsqlInst.host = defaultPgHost
-	}
-	if pgsqlInst.port == no_value {
-		pgsqlInst.port = defaultPgPort
-	}
-	if pgsqlInst.pwd == no_value {
-		pgsqlInst.pwd = defaultPgPwd
-	}
-	if pgsqlInst.defaultDbName == no_value {
-		pgsqlInst.defaultDbName = defaultPgDbName
-	}
+	pgsqlInst.dbConfig = config
 	linkStr := "postgres://%s:%s@%s:%s/%s?sslmode=require"
-	pgsqlInst.DB, _ = sql.Open("postgres", fmt.Sprintf(linkStr, pgsqlInst.user, pgsqlInst.pwd, pgsqlInst.host, pgsqlInst.port, pgsqlInst.defaultDbName))
+	pgsqlInst.DB, _ = sql.Open("postgres", fmt.Sprintf(linkStr, pgsqlInst.UserName, pgsqlInst.Password, pgsqlInst.Host, pgsqlInst.Port, pgsqlInst.Schema))
 	if nil != pgsqlInst.Ping() {
 		log.Fatal(pgsqlInst.Ping())
 	}
+	pgsqlInsts[config.DataSource] = pgsqlInst
 }

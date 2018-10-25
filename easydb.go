@@ -12,29 +12,29 @@ import (
 
 type easydb struct {
 	*sql.DB
-	host, user, pwd, port, defaultDbName string
-	dbType                               dbType
+	*dbConfig
+	dbType dbType
 }
 
-var mysqlAdapter, pgsqlAdapter iAdapter
+var mysqlAdapters, pgsqlAdapters = map[string]iAdapter{}, map[string]iAdapter{}
 
 // GetInst GetInst
-func GetInst(dbType dbType) iAdapter {
+func GetInst(dbType dbType, config *dbConfig) iAdapter {
 	var adapter iAdapter
 	mu := sync.Mutex{}
 	mu.Lock()
 	switch dbType {
 	case MYSQL:
-		if nil == mysqlAdapter {
-			mysqlAdapter = &dbAdapter{initMysql()}
+		if nil == mysqlAdapters[config.DataSource] {
+			mysqlAdapters[config.DataSource] = &dbAdapter{initMysql(config)}
 		}
-		adapter = mysqlAdapter
+		adapter = mysqlAdapters[config.DataSource]
 		break
 	case PGSQL:
-		if nil == pgsqlAdapter {
-			pgsqlAdapter = &dbAdapter{initPgsql()}
+		if nil == pgsqlAdapters[config.DataSource] {
+			pgsqlAdapters[config.DataSource] = &dbAdapter{initPgsql(config)}
 		}
-		adapter = pgsqlAdapter
+		adapter = pgsqlAdapters[config.DataSource]
 		break
 	}
 	mu.Unlock()
@@ -91,14 +91,13 @@ func (p *easydb) Do(optType dbOptType, sqlBuilder iSQLBuilder) (result []map[str
 
 // Close Close
 func Close() {
-	if nil != mysqlInst {
-		mysqlInst.Close()
-		mysqlAdapter = nil
+	for _, inst := range mysqlInsts {
+		inst.Close()
 	}
-	if nil != pgsqlInst {
-		pgsqlInst.Close()
-		pgsqlAdapter = nil
+	for _, inst := range pgsqlInsts {
+		inst.Close()
 	}
+	mysqlAdapters, pgsqlAdapters = nil, nil
 }
 
 // convertToInterfaceSlice []string to []interface{}
