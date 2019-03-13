@@ -1,39 +1,52 @@
 package easydb
 
-type dbConfigParam func(*dbConfig)
+type dbConfigParam func(*DBConfig)
 
+// WithDataSourceName set data source name option
 func WithDataSourceName(DataSource string) dbConfigParam {
-	return func(c *dbConfig) {
+	return func(c *DBConfig) {
 		c.DataSource = DataSource
 	}
 }
+
+// WithUserName set username option
 func WithUserName(UserName string) dbConfigParam {
-	return func(c *dbConfig) {
+	return func(c *DBConfig) {
 		c.UserName = UserName
 	}
 }
+
+// WithPassword set password option
 func WithPassword(Password string) dbConfigParam {
-	return func(c *dbConfig) {
+	return func(c *DBConfig) {
 		c.Password = Password
 	}
 }
+
+// WithHost set host option
 func WithHost(Host string) dbConfigParam {
-	return func(c *dbConfig) {
+	return func(c *DBConfig) {
 		c.Host = Host
 	}
 }
+
+// WithPort set port option
 func WithPort(Port string) dbConfigParam {
-	return func(c *dbConfig) {
+	return func(c *DBConfig) {
 		c.Port = Port
 	}
 }
+
+// WithSchema set schema option
 func WithSchema(Schema string) dbConfigParam {
-	return func(c *dbConfig) {
+	return func(c *DBConfig) {
 		c.Schema = Schema
 	}
 }
-func NewMysqlConfig(params ...dbConfigParam) *dbConfig {
-	config := &dbConfig{}
+
+// NewMysqlConfig create new mysql config
+func NewMysqlConfig(params ...dbConfigParam) *DBConfig {
+	config := &DBConfig{}
 	for _, p := range params {
 		p(config)
 	}
@@ -51,8 +64,10 @@ func NewMysqlConfig(params ...dbConfigParam) *dbConfig {
 	}
 	return config
 }
-func NewPgsqlConfig(params ...dbConfigParam) *dbConfig {
-	config := &dbConfig{}
+
+// NewPgsqlConfig create pgsql config
+func NewPgsqlConfig(params ...dbConfigParam) *DBConfig {
+	config := &DBConfig{}
 	for _, p := range params {
 		p(config)
 	}
@@ -74,7 +89,8 @@ func NewPgsqlConfig(params ...dbConfigParam) *dbConfig {
 	return config
 }
 
-type dbConfig struct {
+// DBConfig db config struct
+type DBConfig struct {
 	DataSource string
 	UserName   string
 	Password   string

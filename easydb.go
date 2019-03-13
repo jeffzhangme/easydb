@@ -12,33 +12,33 @@ import (
 
 type easydb struct {
 	*sql.DB
-	*dbConfig
+	*DBConfig
 	dbType dbType
 }
 
-var mysqlAdapters, pgsqlAdapters = map[string]iAdapter{}, map[string]iAdapter{}
+var mysqlExecs, pgsqlExecs = make(map[string]*DBExec, 10), make(map[string]*DBExec, 10)
 
 // GetInst GetInst
-func GetInst(dbType dbType, config *dbConfig) iAdapter {
-	var adapter iAdapter
+func GetInst(dbType dbType, config *DBConfig) *DBExec {
+	var exec *DBExec
 	mu := sync.Mutex{}
 	mu.Lock()
 	switch dbType {
 	case MYSQL:
-		if nil == mysqlAdapters[config.DataSource] {
-			mysqlAdapters[config.DataSource] = &dbAdapter{initMysql(config)}
+		if nil == mysqlExecs[config.DataSource] {
+			mysqlExecs[config.DataSource] = &DBExec{initMysql(config)}
 		}
-		adapter = mysqlAdapters[config.DataSource]
+		exec = mysqlExecs[config.DataSource]
 		break
 	case PGSQL:
-		if nil == pgsqlAdapters[config.DataSource] {
-			pgsqlAdapters[config.DataSource] = &dbAdapter{initPgsql(config)}
+		if nil == pgsqlExecs[config.DataSource] {
+			pgsqlExecs[config.DataSource] = &DBExec{initPgsql(config)}
 		}
-		adapter = pgsqlAdapters[config.DataSource]
+		exec = pgsqlExecs[config.DataSource]
 		break
 	}
 	mu.Unlock()
-	return adapter
+	return exec
 }
 
 // Do Do
@@ -97,7 +97,7 @@ func Close() {
 	for _, inst := range pgsqlInsts {
 		inst.Close()
 	}
-	mysqlAdapters, pgsqlAdapters = nil, nil
+	mysqlExecs, pgsqlExecs = nil, nil
 }
 
 // convertToInterfaceSlice []string to []interface{}

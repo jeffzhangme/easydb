@@ -3,7 +3,6 @@ package easydb
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"sync"
 
 	// mysql
@@ -11,14 +10,15 @@ import (
 )
 
 var (
-	mysqlInsts = map[string]*dbMysql{}
+	mysqlInsts = map[string]*DBMysql{}
 )
 
-type dbMysql struct {
+// DBMysql mysql database
+type DBMysql struct {
 	easydb
 }
 
-func initMysql(config *dbConfig) *dbMysql {
+func initMysql(config *DBConfig) *DBMysql {
 	mu := sync.Mutex{}
 	mu.Lock()
 	if mysqlInsts[config.DataSource] == nil {
@@ -32,14 +32,14 @@ func initMysql(config *dbConfig) *dbMysql {
 	return mysqlInsts[config.DataSource]
 }
 
-func mysqlConfig(config *dbConfig) {
-	mysqlInst := &dbMysql{}
+func mysqlConfig(config *DBConfig) {
+	mysqlInst := &DBMysql{}
 	mysqlInst.dbType = MYSQL
-	mysqlInst.dbConfig = config
+	mysqlInst.DBConfig = config
 	linkStr := "%s:%s@tcp(%s:%s)/%s"
 	mysqlInst.DB, _ = sql.Open("mysql", fmt.Sprintf(linkStr, mysqlInst.UserName, mysqlInst.Password, mysqlInst.Host, mysqlInst.Port, mysqlInst.Schema))
-	if nil != mysqlInst.Ping() {
-		log.Fatal(mysqlInst.Ping())
+	if err := mysqlInst.Ping(); err != nil {
+		panic(err)
 	}
 	mysqlInsts[config.DataSource] = mysqlInst
 }

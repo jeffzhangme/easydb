@@ -3,7 +3,6 @@ package easydb
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"sync"
 
 	// pgsql
@@ -11,14 +10,15 @@ import (
 )
 
 var (
-	pgsqlInsts = map[string]*dbPgsql{}
+	pgsqlInsts = map[string]*DBPgsql{}
 )
 
-type dbPgsql struct {
+// DBPgsql postgresql database
+type DBPgsql struct {
 	easydb
 }
 
-func initPgsql(config *dbConfig) *dbPgsql {
+func initPgsql(config *DBConfig) *DBPgsql {
 	mu := sync.Mutex{}
 	mu.Lock()
 	if pgsqlInsts[config.DataSource] == nil {
@@ -32,14 +32,14 @@ func initPgsql(config *dbConfig) *dbPgsql {
 	return pgsqlInsts[config.DataSource]
 }
 
-func pgsqlConfig(config *dbConfig) {
-	pgsqlInst := &dbPgsql{}
+func pgsqlConfig(config *DBConfig) {
+	pgsqlInst := &DBPgsql{}
 	pgsqlInst.dbType = PGSQL
-	pgsqlInst.dbConfig = config
+	pgsqlInst.DBConfig = config
 	linkStr := "postgres://%s:%s@%s:%s/%s?sslmode=require"
 	pgsqlInst.DB, _ = sql.Open("postgres", fmt.Sprintf(linkStr, pgsqlInst.UserName, pgsqlInst.Password, pgsqlInst.Host, pgsqlInst.Port, pgsqlInst.Schema))
-	if nil != pgsqlInst.Ping() {
-		log.Fatal(pgsqlInst.Ping())
+	if err := pgsqlInst.Ping(); err != nil {
+		panic(err)
 	}
 	pgsqlInsts[config.DataSource] = pgsqlInst
 }

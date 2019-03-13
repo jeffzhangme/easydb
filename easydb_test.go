@@ -5,19 +5,21 @@ import (
 	"testing"
 )
 
-var mysqlConf = NewMysqlConfig(WithPassword("password"), WithSchema("testdb"))
+var dbExec *DBExec
+var mysqlConf *DBConfig
 var mysqlConf2 = NewMysqlConfig(WithPassword("password"), WithSchema("testdb"), WithHost("127.0.0.1"))
 var pgsqlConf = NewPgsqlConfig(WithSchema("testdb"))
 
 func Test_mysql_insert(t *testing.T) {
-	db := GetInst(MYSQL, mysqlConf2)
-	err := db.Insert(
+	dbExec = GetInst(MYSQL, mysqlConf2)
+	err := dbExec.Insert(
 		BuildInsert("testdb").
 			Table(Table{Name: "test_table"}).
 			Values(Column{Name: "name", Value: "name"}))
 	fmt.Println(err)
 }
 func Test_mysql_delete(t *testing.T) {
+	mysqlConf = NewMysqlConfig(WithPassword("password"), WithSchema("testdb"))
 	db := GetInst(MYSQL, mysqlConf)
 	err := db.Delete(
 		BuildDelete("testdb").
@@ -26,6 +28,7 @@ func Test_mysql_delete(t *testing.T) {
 	fmt.Println(err)
 }
 func Test_mysql_update(t *testing.T) {
+	mysqlConf = NewMysqlConfig(WithPassword("password"), WithSchema("testdb"))
 	db := GetInst(MYSQL, mysqlConf)
 	err := db.Update(
 		BuildUpdate("testdb").
