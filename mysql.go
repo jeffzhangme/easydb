@@ -33,11 +33,15 @@ func initMysql(config *DBConfig) *DBMysql {
 }
 
 func mysqlConfig(config *DBConfig) {
+	var openErr error
 	mysqlInst := &DBMysql{}
 	mysqlInst.dbType = MYSQL
 	mysqlInst.DBConfig = config
 	linkStr := "%s:%s@tcp(%s:%s)/%s"
-	mysqlInst.DB, _ = sql.Open("mysql", fmt.Sprintf(linkStr, mysqlInst.UserName, mysqlInst.Password, mysqlInst.Host, mysqlInst.Port, mysqlInst.Schema))
+	mysqlInst.DB, openErr = sql.Open("mysql", fmt.Sprintf(linkStr, mysqlInst.UserName, mysqlInst.Password, mysqlInst.Host, mysqlInst.Port, mysqlInst.Schema))
+	if openErr != nil {
+		panic(openErr)
+	}
 	if err := mysqlInst.Ping(); err != nil {
 		panic(err)
 	}

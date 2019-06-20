@@ -3,6 +3,7 @@ package easydb
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -16,26 +17,37 @@ type easydb struct {
 	dbType dbType
 }
 
-var mysqlExecs, pgsqlExecs = make(map[string]*DBExec, 10), make(map[string]*DBExec, 10)
+var dbExecs = make(map[string]*DBExec, 10)
+
+// GetExec get executor
+func GetExec(dbType dbType, config *DBConfig) *DBExec {
+	return GetInst(dbType, config)
+}
 
 // GetInst GetInst
 func GetInst(dbType dbType, config *DBConfig) *DBExec {
 	var exec *DBExec
 	mu := sync.Mutex{}
+	// set default value of config.DataSource
+	if config.DataSource == "" {
+		config.DataSource = config.Host + config.Port + config.Schema
+	}
 	mu.Lock()
-	switch dbType {
-	case MYSQL:
-		if nil == mysqlExecs[config.DataSource] {
-			mysqlExecs[config.DataSource] = &DBExec{initMysql(config)}
+	// if executor in cache
+	if _, ok := dbExecs[config.DataSource]; ok {
+		exec = dbExecs[config.DataSource]
+	} else { // if executor not in cache
+		var dbOperator iDBOperate
+		switch dbType {
+		case MYSQL:
+			dbOperator = initMysql(config)
+			break
+		case PGSQL:
+			dbOperator = initPgsql(config)
+			break
 		}
-		exec = mysqlExecs[config.DataSource]
-		break
-	case PGSQL:
-		if nil == pgsqlExecs[config.DataSource] {
-			pgsqlExecs[config.DataSource] = &DBExec{initPgsql(config)}
-		}
-		exec = pgsqlExecs[config.DataSource]
-		break
+		exec = &DBExec{dbOperator}
+		dbExecs[config.DataSource] = exec
 	}
 	mu.Unlock()
 	return exec
@@ -56,11 +68,23 @@ func (p *easydb) Do(optType dbOptType, sqlBuilder iSQLBuilder) (result []map[str
 		}
 		break
 	}
-	stmt, err := p.Prepare(sql)
+	stmt, sErr := p.Prepare(sql)
+	if sErr != nil {
+		err = sErr
+		log.Printf("create statement error: %s", sErr.Error())
+		return
+	}
+	defer func() {
+		stmt.Close()
+	}()
 	switch optType {
 	case Select:
 		rows, queryErr := stmt.Query(convertToInterfaceSlice(sqlBuilder.Val())...)
-		err = queryErr
+		if queryErr != nil {
+			err = queryErr
+			log.Printf("execute query error: %s sql: %s val: %v", queryErr.Error(), sql, sqlBuilder.Val())
+			return
+		}
 		columns, _ := rows.Columns()
 		dest := make([]interface{}, len(columns))
 		destPointers := make([]interface{}, len(columns))
@@ -83,7 +107,11 @@ func (p *easydb) Do(optType dbOptType, sqlBuilder iSQLBuilder) (result []map[str
 		break
 	default:
 		_, execErr := stmt.Exec(convertToInterfaceSlice(sqlBuilder.Val())...)
-		err = execErr
+		if execErr != nil {
+			err = execErr
+			log.Printf("execute error: %s sql: %s val: %v", execErr.Error(), sql, sqlBuilder.Val())
+			return
+		}
 		break
 	}
 	return
@@ -91,13 +119,9 @@ func (p *easydb) Do(optType dbOptType, sqlBuilder iSQLBuilder) (result []map[str
 
 // Close Close
 func Close() {
-	for _, inst := range mysqlInsts {
-		inst.Close()
+	for key := range dbExecs {
+		delete(dbExecs, key)
 	}
-	for _, inst := range pgsqlInsts {
-		inst.Close()
-	}
-	mysqlExecs, pgsqlExecs = nil, nil
 }
 
 // convertToInterfaceSlice []string to []interface{}

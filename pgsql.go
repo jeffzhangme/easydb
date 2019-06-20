@@ -33,11 +33,15 @@ func initPgsql(config *DBConfig) *DBPgsql {
 }
 
 func pgsqlConfig(config *DBConfig) {
+	var openErr error
 	pgsqlInst := &DBPgsql{}
 	pgsqlInst.dbType = PGSQL
 	pgsqlInst.DBConfig = config
 	linkStr := "postgres://%s:%s@%s:%s/%s?sslmode=require"
-	pgsqlInst.DB, _ = sql.Open("postgres", fmt.Sprintf(linkStr, pgsqlInst.UserName, pgsqlInst.Password, pgsqlInst.Host, pgsqlInst.Port, pgsqlInst.Schema))
+	pgsqlInst.DB, openErr = sql.Open("postgres", fmt.Sprintf(linkStr, pgsqlInst.UserName, pgsqlInst.Password, pgsqlInst.Host, pgsqlInst.Port, pgsqlInst.Schema))
+	if openErr != nil {
+		panic(openErr)
+	}
 	if err := pgsqlInst.Ping(); err != nil {
 		panic(err)
 	}
