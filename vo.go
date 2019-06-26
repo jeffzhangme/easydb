@@ -4,8 +4,8 @@ package easydb
 type Where struct {
 	Opt   logicalOptType
 	Key   string
-	Value string
-	Ins   []string
+	Value interface{}
+	Ins   []interface{}
 }
 
 // On on
@@ -40,7 +40,7 @@ type Table struct {
 type Column struct {
 	Name  string
 	As    string
-	Value string
+	Value interface{}
 }
 
 // QueryFunc query func

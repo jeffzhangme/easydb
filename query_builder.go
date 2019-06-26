@@ -10,7 +10,7 @@ import (
 // queryValue query value
 type queryValue struct {
 	sqlBuilder
-	values map[string][]string
+	values map[string][]interface{}
 	dbName string
 }
 
@@ -21,7 +21,7 @@ func newQueryValue(opts ...dbOptType) queryValue {
 		opt = opts[0]
 	}
 	p := queryValue{sqlBuilder: build(opt)}
-	p.values = map[string][]string{}
+	p.values = map[string][]interface{}{}
 	return p
 }
 
@@ -216,8 +216,8 @@ func (p *queryBuilder) Gen() (sql string, err error) {
 }
 
 // Val get values
-func (p *queryBuilder) Val() []string {
-	values := []string{}
+func (p *queryBuilder) Val() []interface{} {
+	values := []interface{}{}
 	values = append(values, p.values["join"]...)
 	values = append(values, p.values["value"]...)
 	values = append(values, p.values["where"]...)
@@ -231,16 +231,21 @@ func likeWhere(p *queryBuilder, t string, where *Where) string {
 	switch where.Opt {
 	case IN:
 		placeholder := []string{}
-		for _, v := range where.Ins {
-			if strings.Contains(v, "`") {
-				if strings.Contains(v, ".") {
-					placeholder = append(placeholder, v[1:len(v)-1])
+		for _, iv := range where.Ins {
+			if v, ok := iv.(string); ok {
+				if strings.HasPrefix(v, "`") && strings.HasSuffix(v, "`") {
+					if strings.Contains(v, ".") {
+						placeholder = append(placeholder, v[1:len(v)-1])
+					} else {
+						placeholder = append(placeholder, v)
+					}
 				} else {
-					placeholder = append(placeholder, v)
+					placeholder = append(placeholder, "?")
+					p.values[t] = append(p.values[t], iv)
 				}
 			} else {
 				placeholder = append(placeholder, "?")
-				p.values[t] = append(p.values[t], v)
+				p.values[t] = append(p.values[t], iv)
 			}
 		}
 		whereStr.WriteString(" IN ( ")
@@ -255,11 +260,16 @@ func likeWhere(p *queryBuilder, t string, where *Where) string {
 		break
 	default:
 		whereStr.WriteString(string(where.Opt))
-		if strings.Contains(where.Value, "`") {
-			if strings.Contains(where.Value, ".") {
-				whereStr.WriteString(where.Value[1 : len(where.Value)-1])
+		if v, ok := where.Value.(string); ok {
+			if strings.HasPrefix(v, "`") && strings.HasSuffix(v, "`") {
+				if strings.Contains(v, ".") {
+					whereStr.WriteString(v[1 : len(v)-1])
+				} else {
+					whereStr.WriteString(v)
+				}
 			} else {
-				whereStr.WriteString(where.Value)
+				whereStr.WriteString(" ? ")
+				p.values[t] = append(p.values[t], where.Value)
 			}
 		} else {
 			whereStr.WriteString(" ? ")

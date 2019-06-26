@@ -2,7 +2,7 @@ package easydb
 
 type iSQLBuilder interface {
 	Gen() (sql string, err error)
-	Val() []string
+	Val() []interface{}
 }
 
 type iDBOperate interface {

@@ -79,7 +79,7 @@ func (p *easydb) Do(optType dbOptType, sqlBuilder iSQLBuilder) (result []map[str
 	}()
 	switch optType {
 	case Select:
-		rows, queryErr := stmt.Query(convertToInterfaceSlice(sqlBuilder.Val())...)
+		rows, queryErr := stmt.Query(sqlBuilder.Val()...)
 		if queryErr != nil {
 			err = queryErr
 			log.Printf("execute query error: %s sql: %s val: %v", queryErr.Error(), sql, sqlBuilder.Val())
@@ -106,7 +106,7 @@ func (p *easydb) Do(optType dbOptType, sqlBuilder iSQLBuilder) (result []map[str
 		result = resultArr
 		break
 	default:
-		_, execErr := stmt.Exec(convertToInterfaceSlice(sqlBuilder.Val())...)
+		_, execErr := stmt.Exec(sqlBuilder.Val()...)
 		if execErr != nil {
 			err = execErr
 			log.Printf("execute error: %s sql: %s val: %v", execErr.Error(), sql, sqlBuilder.Val())

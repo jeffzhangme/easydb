@@ -28,8 +28,13 @@ func (p *updateBuilder) Table(table Table) iUTableReturn {
 // Set set
 func (p *updateBuilder) Set(columns ...Column) iUSetReturn {
 	for _, column := range columns {
-		if strings.Contains(column.Value, "`") {
-			p.sqlBuilder.columns(column.Name + " = " + column.Value)
+		if v, ok := column.Value.(string); ok {
+			if strings.HasPrefix(v, "`") && strings.HasSuffix(v, "`") {
+				p.sqlBuilder.columns(column.Name + " = " + v)
+			} else {
+				p.sqlBuilder.columns(column.Name + " = ? ")
+				p.values["value"] = append(p.values["value"], column.Value)
+			}
 		} else {
 			p.sqlBuilder.columns(column.Name + " = ? ")
 			p.values["value"] = append(p.values["value"], column.Value)

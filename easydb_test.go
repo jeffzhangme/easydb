@@ -20,20 +20,20 @@ func Test_mysql_insert(t *testing.T) {
 }
 func Test_mysql_delete(t *testing.T) {
 	mysqlConf = NewMysqlConfig(WithPassword("password"), WithSchema("testdb"))
-	db := GetInst(MYSQL, mysqlConf)
+	db := GetInst(MYSQL, mysqlConf2)
 	err := db.Delete(
 		BuildDelete("testdb").
 			Table(Table{Name: "test_table"}).
-			Where(Where{Key: "name", Opt: NE, Value: "name"}))
+			Where(Where{Key: "id", Opt: EQ, Value: 1}))
 	fmt.Println(err)
 }
 func Test_mysql_update(t *testing.T) {
 	mysqlConf = NewMysqlConfig(WithPassword("password"), WithSchema("testdb"))
-	db := GetInst(MYSQL, mysqlConf)
+	db := GetInst(MYSQL, mysqlConf2)
 	err := db.Update(
 		BuildUpdate("testdb").
 			Table(Table{Name: "test_table"}).
-			Set(Column{Name: "name", Value: "name"}).
+			Set(Column{Name: "name", Value: "name1"}).
 			Where(Where{Key: "email", Opt: EQ, Value: ""}))
 	fmt.Println(err)
 }

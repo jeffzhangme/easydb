@@ -28,7 +28,7 @@ type iFromsReturn interface {
 	OrderBy(orders ...Order) iOrderByReturn
 	Limit(limit int) iLimitReturn
 	Gen() (sql string, err error)
-	Val() []string
+	Val() []interface{}
 }
 
 // iJoinReturn iJoinReturn
@@ -45,7 +45,7 @@ type iOnReturn interface {
 	OrderBy(orders ...Order) iOrderByReturn
 	Limit(limit int) iLimitReturn
 	Gen() (sql string, err error)
-	Val() []string
+	Val() []interface{}
 	And() iAndReturn
 	Or() iOrReturn
 }
@@ -58,7 +58,7 @@ type iWheresReturn interface {
 	OrderBy(orders ...Order) iOrderByReturn
 	Limit(limit int) iLimitReturn
 	Gen() (sql string, err error)
-	Val() []string
+	Val() []interface{}
 }
 
 // iGroupByReturn 制约groupby条件 后调用
@@ -67,7 +67,7 @@ type iGroupByReturn interface {
 	OrderBy(orders ...Order) iOrderByReturn
 	Limit(limit int) iLimitReturn
 	Gen() (sql string, err error)
-	Val() []string
+	Val() []interface{}
 }
 
 // iHavingsReturn iHavingsReturn
@@ -77,27 +77,27 @@ type iHavingsReturn interface {
 	And() iAndReturn
 	Or() iOrReturn
 	Gen() (sql string, err error)
-	Val() []string
+	Val() []interface{}
 }
 
 // iOrderByReturn iOrderByReturn
 type iOrderByReturn interface {
 	Limit(limit int) iLimitReturn
 	Gen() (sql string, err error)
-	Val() []string
+	Val() []interface{}
 }
 
 // iLimitReturn iLimitReturn
 type iLimitReturn interface {
 	Offset(offset int) iOffsetReturn
 	Gen() (sql string, err error)
-	Val() []string
+	Val() []interface{}
 }
 
 // iOffsetReturn iOffsetReturn
 type iOffsetReturn interface {
 	Gen() (sql string, err error)
-	Val() []string
+	Val() []interface{}
 }
 
 // iAndReturn iAndReturn
@@ -132,7 +132,7 @@ type iEndGroupReturn interface {
 	And() iAndReturn
 	Or() iOrReturn
 	Gen() (sql string, err error)
-	Val() []string
+	Val() []interface{}
 }
 
 // iBuildInsertReturn iBuildInsertReturn
@@ -148,7 +148,7 @@ type iITableReturn interface {
 // iIValuesReturn iIValuesReturn
 type iIValuesReturn interface {
 	Gen() (sql string, err error)
-	Val() []string
+	Val() []interface{}
 }
 
 // iBuildDeleteReturn iBuildDeleteReturn
@@ -167,7 +167,7 @@ type iDWheresReturn interface {
 	Or() iDOrReturn
 	EndGroup() iDEndGroup
 	Gen() (sql string, err error)
-	Val() []string
+	Val() []interface{}
 }
 
 // iDAndReturn iDAndReturn
@@ -190,7 +190,7 @@ type iDStartGroup interface {
 type iDEndGroup interface {
 	Where(where Where) iDWheresReturn
 	Gen() (sql string, err error)
-	Val() []string
+	Val() []interface{}
 }
 
 // iBuildUpdateReturn iBuildUpdateReturn
@@ -202,7 +202,7 @@ type iBuildUpdateReturn interface {
 type iUSetReturn interface {
 	Where(where Where) iDWheresReturn
 	Gen() (sql string, err error)
-	Val() []string
+	Val() []interface{}
 }
 
 // iUTableReturn iUTableReturn
