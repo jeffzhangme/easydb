@@ -15,21 +15,18 @@ type DBExec struct {
 }
 
 //Insert Insert
-func (p *DBExec) Insert(sqlBuilder iSQLBuilder) error {
-	_, err := p.Do(Insert, sqlBuilder)
-	return err
+func (p *DBExec) Insert(sqlBuilder iSQLBuilder) ([]map[string]interface{}, error) {
+	return p.Do(Insert, sqlBuilder)
 }
 
 //Update Update
-func (p *DBExec) Update(sqlBuilder iSQLBuilder) error {
-	_, err := p.Do(Update, sqlBuilder)
-	return err
+func (p *DBExec) Update(sqlBuilder iSQLBuilder) ([]map[string]interface{}, error) {
+	return p.Do(Update, sqlBuilder)
 }
 
 //Delete Delete
-func (p *DBExec) Delete(sqlBuilder iSQLBuilder) error {
-	_, err := p.Do(Delete, sqlBuilder)
-	return err
+func (p *DBExec) Delete(sqlBuilder iSQLBuilder) ([]map[string]interface{}, error) {
+	return p.Do(Delete, sqlBuilder)
 }
 
 //Select Select

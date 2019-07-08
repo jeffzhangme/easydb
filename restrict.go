@@ -57,6 +57,7 @@ type iWheresReturn interface {
 	GroupBy(group ...string) iGroupByReturn
 	OrderBy(orders ...Order) iOrderByReturn
 	Limit(limit int) iLimitReturn
+	EndGroup() iEndGroupReturn
 	Gen() (sql string, err error)
 	Val() []interface{}
 }
@@ -76,6 +77,7 @@ type iHavingsReturn interface {
 	Limit(limit int) iLimitReturn
 	And() iAndReturn
 	Or() iOrReturn
+	EndGroup() iEndGroupReturn
 	Gen() (sql string, err error)
 	Val() []interface{}
 }
@@ -105,7 +107,6 @@ type iAndReturn interface {
 	Where(where Where) iWheresReturn
 	Having(having Having) iHavingsReturn
 	StartGroup() iStartGroupReturn
-	EndGroup() iEndGroupReturn
 	On(on On) iOnReturn
 }
 

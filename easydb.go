@@ -66,6 +66,9 @@ func (p *easydb) Do(optType dbOptType, sqlBuilder iSQLBuilder) (result []map[str
 		if len(placeholder) > 0 {
 			sql = fmt.Sprintf(sql, placeholder...)
 		}
+		if optType == Insert {
+			sql += " RETURNING id"
+		}
 		break
 	}
 	stmt, sErr := p.Prepare(sql)
@@ -77,9 +80,13 @@ func (p *easydb) Do(optType dbOptType, sqlBuilder iSQLBuilder) (result []map[str
 	defer func() {
 		stmt.Close()
 	}()
+	resultArr := []map[string]interface{}{}
 	switch optType {
 	case Select:
 		rows, queryErr := stmt.Query(sqlBuilder.Val()...)
+		defer func() {
+			rows.Close()
+		}()
 		if queryErr != nil {
 			err = queryErr
 			log.Printf("execute query error: %s sql: %s val: %v", queryErr.Error(), sql, sqlBuilder.Val())
@@ -91,7 +98,6 @@ func (p *easydb) Do(optType dbOptType, sqlBuilder iSQLBuilder) (result []map[str
 		for i := range columns {
 			destPointers[i] = &dest[i]
 		}
-		resultArr := []map[string]interface{}{}
 		for rows.Next() {
 			err = rows.Scan(destPointers...)
 			resultMap := map[string]interface{}{}
@@ -103,17 +109,36 @@ func (p *easydb) Do(optType dbOptType, sqlBuilder iSQLBuilder) (result []map[str
 			}
 			resultArr = append(resultArr, resultMap)
 		}
-		result = resultArr
 		break
 	default:
-		_, execErr := stmt.Exec(sqlBuilder.Val()...)
-		if execErr != nil {
-			err = execErr
-			log.Printf("execute error: %s sql: %s val: %v", execErr.Error(), sql, sqlBuilder.Val())
-			return
+		resMap := map[string]interface{}{}
+		if p.dbType == PGSQL && optType == Insert {
+			var lastInsertID int
+			execErr := stmt.QueryRow(sqlBuilder.Val()...).Scan(&lastInsertID)
+			if execErr != nil {
+				err = execErr
+				log.Printf("execute error: %s sql: %s val: %v", execErr.Error(), sql, sqlBuilder.Val())
+				return
+			}
+			resMap["id"] = lastInsertID
+		} else {
+			r, execErr := stmt.Exec(sqlBuilder.Val()...)
+			if execErr != nil {
+				err = execErr
+				log.Printf("execute error: %s sql: %s val: %v", execErr.Error(), sql, sqlBuilder.Val())
+				return
+			}
+			if id, idErr := r.LastInsertId(); idErr == nil {
+				resMap["id"] = id
+			}
+			if ra, raErr := r.RowsAffected(); raErr == nil {
+				resMap["ra"] = ra
+			}
 		}
+		resultArr = append(resultArr, resMap)
 		break
 	}
+	result = resultArr
 	return
 }
 

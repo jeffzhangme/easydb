@@ -44,6 +44,27 @@ func WithSchema(Schema string) dbConfigParam {
 	}
 }
 
+// WithConnParams set schema option
+func WithConnParams(ConnParams string) dbConfigParam {
+	return func(c *DBConfig) {
+		c.ConnParams = ConnParams
+	}
+}
+
+// WithEnableMigrate set schema option
+func WithEnableMigrate(EnableMigrate bool) dbConfigParam {
+	return func(c *DBConfig) {
+		c.EnableMigrate = EnableMigrate
+	}
+}
+
+// WithMigrateDir set schema option
+func WithMigrateDir(MigrateDir string) dbConfigParam {
+	return func(c *DBConfig) {
+		c.MigrateDir = MigrateDir
+	}
+}
+
 // NewMysqlConfig create new mysql config
 func NewMysqlConfig(params ...dbConfigParam) *DBConfig {
 	config := &DBConfig{}
@@ -61,6 +82,9 @@ func NewMysqlConfig(params ...dbConfigParam) *DBConfig {
 	}
 	if config.DataSource == "" {
 		config.DataSource = config.Host + config.Port + config.Schema
+	}
+	if config.MigrateDir == "" {
+		config.MigrateDir = "./migrations"
 	}
 	return config
 }
@@ -86,15 +110,21 @@ func NewPgsqlConfig(params ...dbConfigParam) *DBConfig {
 	if config.DataSource == "" {
 		config.DataSource = config.Host + config.Port + config.Schema
 	}
+	if config.MigrateDir == "" {
+		config.MigrateDir = "./migrations"
+	}
 	return config
 }
 
 // DBConfig db config struct
 type DBConfig struct {
-	DataSource string
-	UserName   string
-	Password   string
-	Host       string
-	Port       string
-	Schema     string
+	DataSource    string
+	UserName      string
+	Password      string
+	Host          string
+	Port          string
+	Schema        string
+	ConnParams    string
+	EnableMigrate bool
+	MigrateDir    string
 }

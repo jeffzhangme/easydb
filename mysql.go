@@ -3,10 +3,14 @@ package easydb
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 	"sync"
 
 	// mysql
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/golang-migrate/migrate"
+	"github.com/golang-migrate/migrate/database/mysql"
+	_ "github.com/golang-migrate/migrate/source/file"
 )
 
 var (
@@ -38,12 +42,33 @@ func mysqlConfig(config *DBConfig) {
 	mysqlInst.dbType = MYSQL
 	mysqlInst.DBConfig = config
 	linkStr := "%s:%s@tcp(%s:%s)/%s"
-	mysqlInst.DB, openErr = sql.Open("mysql", fmt.Sprintf(linkStr, mysqlInst.UserName, mysqlInst.Password, mysqlInst.Host, mysqlInst.Port, mysqlInst.Schema))
+	linkStr = fmt.Sprintf(linkStr, mysqlInst.UserName, mysqlInst.Password, mysqlInst.Host, mysqlInst.Port, mysqlInst.Schema)
+	if mysqlInst.ConnParams != "" {
+		linkStr += "?" + strings.Replace(mysqlInst.ConnParams, "/", "%2F", -1)
+	}
+	mysqlInst.DB, openErr = sql.Open("mysql", linkStr)
 	if openErr != nil {
 		panic(openErr)
 	}
 	if err := mysqlInst.Ping(); err != nil {
 		panic(err)
+	}
+	if mysqlInst.EnableMigrate {
+		driver, err := mysql.WithInstance(mysqlInst.DB, &mysql.Config{})
+		if err != nil {
+			panic(err)
+		}
+		if m, err := migrate.NewWithDatabaseInstance(
+			"file://"+mysqlInst.MigrateDir,
+			"mysql", driver); err == nil {
+			if err = m.Up(); err != nil {
+				if err != migrate.ErrNoChange {
+					panic(err)
+				}
+			}
+		} else {
+			panic(err)
+		}
 	}
 	mysqlInsts[config.DataSource] = mysqlInst
 }
