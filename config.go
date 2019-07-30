@@ -44,6 +44,27 @@ func WithSchema(Schema string) dbConfigParam {
 	}
 }
 
+// WithMaxOpenConns set schema option
+func WithMaxOpenConns(MaxOpenConns int) dbConfigParam {
+	return func(c *DBConfig) {
+		c.MaxOpenConns = MaxOpenConns
+	}
+}
+
+// WithMaxIdleConns set schema option
+func WithMaxIdleConns(MaxIdleConns int) dbConfigParam {
+	return func(c *DBConfig) {
+		c.MaxIdleConns = MaxIdleConns
+	}
+}
+
+// WithConnMaxLifetime set schema option
+func WithConnMaxLifetime(ConnMaxLifetime int) dbConfigParam {
+	return func(c *DBConfig) {
+		c.ConnMaxLifetime = ConnMaxLifetime
+	}
+}
+
 // WithConnParams set schema option
 func WithConnParams(ConnParams string) dbConfigParam {
 	return func(c *DBConfig) {
@@ -118,13 +139,16 @@ func NewPgsqlConfig(params ...dbConfigParam) *DBConfig {
 
 // DBConfig db config struct
 type DBConfig struct {
-	DataSource    string
-	UserName      string
-	Password      string
-	Host          string
-	Port          string
-	Schema        string
-	ConnParams    string
-	EnableMigrate bool
-	MigrateDir    string
+	DataSource      string
+	UserName        string
+	Password        string
+	Host            string
+	Port            string
+	Schema          string
+	ConnParams      string
+	MaxOpenConns    int
+	MaxIdleConns    int
+	ConnMaxLifetime int
+	EnableMigrate   bool
+	MigrateDir      string
 }

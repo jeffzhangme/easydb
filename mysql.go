@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	// mysql
 	_ "github.com/go-sql-driver/mysql"
@@ -52,6 +53,15 @@ func mysqlConfig(config *DBConfig) {
 	}
 	if err := mysqlInst.Ping(); err != nil {
 		panic(err)
+	}
+	if mysqlInst.MaxOpenConns > 0 {
+		mysqlInst.DB.SetMaxOpenConns(mysqlInst.MaxOpenConns)
+	}
+	if mysqlInst.MaxIdleConns > 0 {
+		mysqlInst.DB.SetMaxIdleConns(mysqlInst.MaxIdleConns)
+	}
+	if mysqlInst.ConnMaxLifetime > 0 {
+		mysqlInst.DB.SetConnMaxLifetime(time.Duration(mysqlInst.ConnMaxLifetime) * time.Millisecond)
 	}
 	if mysqlInst.EnableMigrate {
 		driver, err := mysql.WithInstance(mysqlInst.DB, &mysql.Config{})

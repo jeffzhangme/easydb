@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	// pgsql
 	"github.com/golang-migrate/migrate"
@@ -51,6 +52,15 @@ func pgsqlConfig(config *DBConfig) {
 	}
 	if err := pgsqlInst.Ping(); err != nil {
 		panic(err)
+	}
+	if pgsqlInst.MaxOpenConns > 0 {
+		pgsqlInst.DB.SetMaxOpenConns(pgsqlInst.MaxOpenConns)
+	}
+	if pgsqlInst.MaxIdleConns > 0 {
+		pgsqlInst.DB.SetMaxIdleConns(pgsqlInst.MaxIdleConns)
+	}
+	if pgsqlInst.ConnMaxLifetime > 0 {
+		pgsqlInst.DB.SetConnMaxLifetime(time.Duration(pgsqlInst.ConnMaxLifetime) * time.Millisecond)
 	}
 	if pgsqlInst.EnableMigrate {
 		driver, err := postgres.WithInstance(pgsqlInst.DB, &postgres.Config{})
