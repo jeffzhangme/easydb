@@ -42,16 +42,16 @@ func main() {
 	defer easydb.Close()
 	db := easydb.GetInst(easydb.MYSQL, mysqlConf)
 	db2 := easydb.GetInst(easydb.MYSQL, mysqlConf2)
-	err := db.Insert(
+	r, _ := db.Insert(
 		easydb.BuildInsert("testdb").
 			Table(easydb.Table{Name: "test_table"}).
 			Values(easydb.Column{Name: "name", Value: "name"}))
-	fmt.Println(err)
-	result2, err2 := db2.Select(
+	fmt.Println(r)
+	r2, _ := db2.Select(
 		easydb.BuildQuery("testdb").
 			Columns(easydb.Column{Name: "*"}).
 			Tables(easydb.Table{Name: "test_table"}).
 			Where(easydb.Where{Key: "name", Opt: easydb.EQ, Value: "name"}))
-	fmt.Println(result2, err2)
+	fmt.Println(r2)
 }
 ```

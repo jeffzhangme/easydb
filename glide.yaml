@@ -4,7 +4,6 @@ ignore:
 import:
 - package: github.com/go-sql-driver/mysql
   version: ^1.3.0
-- package: github.com/widuu/goini
 - package: github.com/lib/pq
 - package: github.com/golang-migrate/migrate
   version: ^3.5.4
