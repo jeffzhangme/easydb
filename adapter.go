@@ -1,5 +1,10 @@
 package easydb
 
+import (
+	"context"
+	"database/sql"
+)
+
 type iSQLBuilder interface {
 	Gen() (sql string, err error)
 	Val() []interface{}
@@ -7,6 +12,8 @@ type iSQLBuilder interface {
 
 type iDBOperate interface {
 	Do(optType dbOptType, sqlBuilder iSQLBuilder) ([]map[string]interface{}, error)
+	Begin() (*sql.Tx, error)
+	BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
 }
 
 // DBExec db executor

@@ -107,7 +107,10 @@ func (p *queryBuilder) RightJoin(table Table) iJoinReturn {
 
 // On on
 func (p *queryBuilder) On(on On) iOnReturn {
-	where := (*Where)(unsafe.Pointer(&on))
+	where := new(Where)
+	where.Opt = on.Opt
+	where.Value = on.Value
+	where.Key = on.Key
 	p.sqlBuilder.on(likeWhere(p, "join", where))
 	return p
 }
