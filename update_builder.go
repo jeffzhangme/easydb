@@ -42,3 +42,5 @@ func (p *updateBuilder) Set(columns ...Column) iUSetReturn {
 	}
 	return p
 }
+func (p *updateBuilder) __update() {
+}

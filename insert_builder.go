@@ -29,3 +29,6 @@ func (p *insertBuilder) Values(columns ...Column) iIValuesReturn {
 	}
 	return p
 }
+
+func (p *insertBuilder) __insert() {
+}

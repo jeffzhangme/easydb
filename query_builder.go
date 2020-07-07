@@ -229,6 +229,10 @@ func (p *queryBuilder) Val() []interface{} {
 	values = append(values, p.values["offset"]...)
 	return values
 }
+
+func (p *queryBuilder) __query() {
+}
+
 func likeWhere(p *queryBuilder, t string, where *Where) string {
 	whereStr := bytes.NewBufferString(where.Key)
 	switch where.Opt {

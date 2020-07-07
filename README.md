@@ -4,25 +4,12 @@
 ## Features
 
 * Easy to use and expand
-* Package management using [glide](https://github.com/Masterminds/glide)
+* Package management using [go modules](https://blog.golang.org/using-go-modules)
 * Current support for mysql and postgresql
 * Support for Multi Data Sources
 ## Usage
 
-It is recommended to use [glide](https://github.com/Masterminds/glide)
-
-
-Add the configuration in the file glide.yaml: 
-
-```
-- package: github.com/jeffzhangme/easydb
-```
-
-Install the package with the command from shell:
-
-```
-$ glide install
-```
+It is recommended to use [go module](https://blog.golang.org/using-go-modules)
 
 Your code looks like this:
 
@@ -40,14 +27,14 @@ var mysqlConf2 = easydb.NewMysqlConfig(easydb.WithHost("127.0.0.1"), easydb.With
 
 func main() {
 	defer easydb.Close()
-	db := easydb.GetInst(easydb.MYSQL, mysqlConf)
-	db2 := easydb.GetInst(easydb.MYSQL, mysqlConf2)
-	r, _ := db.Insert(
+	db := easydb.GetExec(easydb.MYSQL, mysqlConf)
+	db2 := easydb.GetExec(easydb.MYSQL, mysqlConf2)
+	r, _ := db.Exec(
 		easydb.BuildInsert("testdb").
 			Table(easydb.Table{Name: "test_table"}).
 			Values(easydb.Column{Name: "name", Value: "name"}))
 	fmt.Println(r)
-	r2, _ := db2.Select(
+	r2, _ := db2.Exec(
 		easydb.BuildQuery("testdb").
 			Columns(easydb.Column{Name: "*"}).
 			Tables(easydb.Table{Name: "test_table"}).

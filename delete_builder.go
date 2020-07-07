@@ -50,3 +50,6 @@ func (p *deleteBuilder) EndGroup() iDEndGroup {
 	p.queryBuilder.EndGroup()
 	return p
 }
+
+func (p *deleteBuilder) __delete() {
+}

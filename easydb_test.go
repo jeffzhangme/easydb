@@ -3,13 +3,12 @@ package easydb
 import (
 	"fmt"
 	"testing"
-	// . "github.com/jeffzhangme/easydb"
 )
 
 var dbExec *DBExec
 var mysqlConf *DBConfig
 var mysqlConf2 = NewMysqlConfig(WithPassword("password"), WithSchema("testdb"), WithHost("127.0.0.1"))
-var pgsqlConf = NewPgsqlConfig(WithSchema("testdb"))
+var pgsqlConf = NewPgsqlConfig(WithSchema("test_db"))
 
 func Test_mysql_insert(t *testing.T) {
 
@@ -22,8 +21,8 @@ func Test_mysql_insert(t *testing.T) {
 }
 func Test_mysql_delete(t *testing.T) {
 	mysqlConf = NewMysqlConfig(WithPassword("password"), WithSchema("testdb"))
-	db := GetInst(MYSQL, mysqlConf2)
-	r, _ := db.Delete(
+	db := GetExec(MYSQL, mysqlConf2)
+	r, _ := db.Exec(
 		BuildDelete("testdb").
 			Table(Table{Name: "test_table"}).
 			Where(Where{Key: "id", Opt: EQ, Value: 1}))
@@ -31,8 +30,8 @@ func Test_mysql_delete(t *testing.T) {
 }
 func Test_mysql_update(t *testing.T) {
 	mysqlConf = NewMysqlConfig(WithPassword("password"), WithSchema("testdb"))
-	db := GetInst(MYSQL, mysqlConf2)
-	r, _ := db.Update(
+	db := GetExec(MYSQL, mysqlConf2)
+	r, _ := db.Exec(
 		BuildUpdate("testdb").
 			Table(Table{Name: "test_table"}).
 			Set(Column{Name: "name", Value: "name1"}).
@@ -40,8 +39,8 @@ func Test_mysql_update(t *testing.T) {
 	fmt.Println(r)
 }
 func Test_mysql_select(t *testing.T) {
-	db := GetInst(MYSQL, mysqlConf2)
-	r, _ := db.Select(
+	db := GetExec(MYSQL, mysqlConf2)
+	r, _ := db.Exec(
 		BuildQuery("testdb").
 			Columns(Column{Name: "*"}).
 			Tables(Table{Name: "test_table"}).
@@ -50,24 +49,24 @@ func Test_mysql_select(t *testing.T) {
 }
 
 func Test_pgsql_insert(t *testing.T) {
-	db := GetInst(PGSQL, pgsqlConf)
-	r, _ := db.Insert(
+	db := GetExec(PGSQL, pgsqlConf)
+	r, _ := db.Exec(
 		BuildInsert("public").
 			Table(Table{Name: "test_table"}).
 			Values(Column{Name: "name", Value: "name"}))
 	fmt.Println(r)
 }
 func Test_pgsql_delete(t *testing.T) {
-	db := GetInst(PGSQL, pgsqlConf)
-	r, _ := db.Delete(
+	db := GetExec(PGSQL, pgsqlConf)
+	r, _ := db.Exec(
 		BuildDelete("public").
 			Table(Table{Name: "test_table"}).
 			Where(Where{Key: "name", Opt: NE, Value: "name"}))
 	fmt.Println(r)
 }
 func Test_pgsql_update(t *testing.T) {
-	db := GetInst(PGSQL, pgsqlConf)
-	r, _ := db.Update(
+	db := GetExec(PGSQL, pgsqlConf)
+	r, _ := db.Exec(
 		BuildUpdate("public").
 			Table(Table{Name: "test_table"}).
 			Set(Column{Name: "email", Value: "email"}).
@@ -76,8 +75,8 @@ func Test_pgsql_update(t *testing.T) {
 }
 
 func Test_pgsql_select(t *testing.T) {
-	db := GetInst(PGSQL, pgsqlConf)
-	r, _ := db.Select(
+	db := GetExec(PGSQL, pgsqlConf)
+	r, _ := db.Exec(
 		BuildQuery("public").
 			Columns(Column{Name: "*"}).
 			Tables(Table{Name: "test_table"}).
